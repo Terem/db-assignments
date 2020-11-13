@@ -376,7 +376,7 @@ async function task_1_19(db) {
         sum(UnitPrice * Quantity) as 'TotalOrdersAmount, $'
         FROM Customers
         join Orders on Customers.CustomerID = Orders.CustomerID
-        join Orderdetails on Orders.OrderID = Orderdetails.OrderID
+        join OrderDetails on Orders.OrderID = OrderDetails.OrderID
         group by CustomerID
         having sum(UnitPrice*Quantity) > 10000
         order by 3 desc, 1
@@ -398,7 +398,7 @@ async function task_1_20(db) {
         sum(UnitPrice * Quantity) as 'Amount, $'
         FROM Employees
         join Orders on Employees.EmployeeID = Orders.EmployeeID
-        join Orderdetails on Orderdetails.OrderID = Orders.OrderID
+        join OrderDetails on OrderDetails.OrderID = Orders.OrderID
         group by EmployeeID
         order by 3 desc
         limit 1
@@ -415,7 +415,7 @@ async function task_1_20(db) {
 async function task_1_21(db) {
     let result = await db.query(`
         SELECT OrderID, sum(UnitPrice * Quantity) as 'Maximum Purchase Amount, $'
-        FROM Orderdetails
+        FROM OrderDetails
         group by OrderID
         order by 2 desc
         limit 1
@@ -433,16 +433,16 @@ async function task_1_21(db) {
  */
 async function task_1_22(db) {
     let result = await db.query(`
-        SELECT  distinct Customers.CompanyName, Products.ProductName, Orderdetails.UnitPrice as 'PricePerItem'
+        SELECT  distinct Customers.CompanyName, Products.ProductName, OrderDetails.UnitPrice as 'PricePerItem'
         FROM Customers 
         join Orders on Customers.CustomerID = Orders.CustomerID
-        join Orderdetails on Orders.OrderID = Orderdetails.OrderID
-        join Products on Orderdetails.ProductID = Products.ProductID
-        where Orderdetails.UnitPrice = (
-            SELECT max(Orderdetails.UnitPrice)
+        join OrderDetails on Orders.OrderID = OrderDetails.OrderID
+        join Products on OrderDetails.ProductID = Products.ProductID
+        where OrderDetails.UnitPrice = (
+            SELECT max(OrderDetails.UnitPrice)
             FROM Customers c1
             join Orders on Customers.CustomerID = Orders.CustomerID
-            join Orderdetails on Orders.OrderID = Orderdetails.OrderID
+            join OrderDetails on Orders.OrderID = OrderDetails.OrderID
             where c1.CompanyName = Customers.CompanyName
         )
         order by 3 desc, Customers.CompanyName,  Products.ProductName
