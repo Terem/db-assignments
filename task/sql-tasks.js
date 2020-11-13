@@ -129,9 +129,9 @@ async function task_1_5(db) {
 async function task_1_6(db) {
     let result = await db.query(`
         SELECT ProductName, CategoryName, CompanyName as 'SupplierCompanyName'
-        FROM products 
-        JOIN categories on products.CategoryID = categories.CategoryID
-        JOIN suppliers on products.SupplierID = suppliers.SupplierID
+        FROM Products 
+        JOIN Categories on Products.CategoryID = Categories.CategoryID
+        JOIN Suppliers on Products.SupplierID = Suppliers.SupplierID
         ORDER BY ProductName, CompanyName
     `);
     return result[0];
@@ -151,8 +151,8 @@ async function task_1_7(db) {
     let result = await db.query(`
         SELECT  e.EmployeeID as 'EmployeeId', concat(e.FirstName, ' ', e.LastName) as 'FullName',
         IF(e.ReportsTo is null, "-", concat(r.FirstName, ' ', r.LastName)) as 'ReportsTo'
-        FROM employees e 
-        LEFT JOIN employees r  on e.ReportsTo = r.EmployeeID 
+        FROM Employees e 
+        LEFT JOIN Employees r  on e.ReportsTo = r.EmployeeID 
     `);
     return result[0];
 }
@@ -168,8 +168,8 @@ async function task_1_7(db) {
 async function task_1_8(db) {
     let result = await db.query(`
         SELECT CategoryName,  count(ProductName) as 'TotalNumberOfProducts'
-        FROM categories 
-        JOIN products on categories.CategoryID = products.CategoryID
+        FROM Categories 
+        JOIN Products on Categories.CategoryID = Products.CategoryID
         GROUP BY CategoryName
         ORDER BY CategoryName
     `);
@@ -187,7 +187,7 @@ async function task_1_8(db) {
 async function task_1_9(db) {
     let result = await db.query(`
         SELECT CustomerID, ContactName  
-        FROM customers
+        FROM Customers
         WHERE ContactName like 'F__n%'
     `);
     return result[0];
@@ -203,7 +203,7 @@ async function task_1_9(db) {
 async function task_1_10(db) {
     let result = await db.query(`
         SELECT ProductID, ProductName  
-        FROM products
+        FROM Products
         WHERE Discontinued = 1
     `);
     return result[0];
@@ -221,7 +221,7 @@ async function task_1_10(db) {
 async function task_1_11(db) {
     let result = await db.query(`
         SELECT ProductName, UnitPrice  
-        FROM products
+        FROM Products
         WHERE UnitPrice >= 5 and UnitPrice <= 15
         ORDER BY UnitPrice, ProductName
     `);
@@ -238,10 +238,11 @@ async function task_1_11(db) {
  */
 async function task_1_12(db) {
     let result = await db.query(`
-        SELECT * FROM (SELECT ProductName, UnitPrice 
-        FROM products
-        order by UnitPrice desc
-        limit 20) products20
+        SELECT * FROM 
+            (SELECT ProductName, UnitPrice 
+            FROM Products
+            order by UnitPrice desc
+            limit 20) products20
         order by UnitPrice, ProductName 
     `);
     return result[0];
@@ -258,7 +259,7 @@ async function task_1_13(db) {
     let result = await db.query(`
         SELECT count(ProductID) as 'TotalOfCurrentProducts', 
         sum(Discontinued) as 'TotalOfDiscontinuedProducts'
-        FROM northwind.products;
+        FROM Products;
     `);
     return result[0];
 }
@@ -273,7 +274,7 @@ async function task_1_13(db) {
 async function task_1_14(db) {
     let result = await db.query(`
         SELECT ProductName, UnitsOnOrder, UnitsInStock
-        FROM northwind.products
+        FROM Products
         where UnitsOnOrder>UnitsInStock
     `);
     return result[0];
@@ -317,7 +318,7 @@ async function task_1_15(db) {
 async function task_1_16(db) {
     let result = await db.query(`
         SELECT OrderID, CustomerID, ShipCountry 
-        FROM orders
+        FROM Orders
         WHERE ShipPostalCode is not null
     `);
     return result[0];
@@ -335,8 +336,8 @@ async function task_1_16(db) {
 async function task_1_17(db) {
     let result = await db.query(`
         SELECT CategoryName, avg(UnitPrice) as AvgPrice 
-        FROM categories
-        JOIN products on categories.CategoryID = products.CategoryID
+        FROM Categories
+        JOIN Products on Categories.CategoryID = Products.CategoryID
         group by CategoryName
         order by AvgPrice desc, CategoryName
     `);
@@ -371,11 +372,11 @@ async function task_1_18(db) {
  */
 async function task_1_19(db) {
     let result = await db.query(`
-        SELECT  customers.CustomerID, CompanyName,
+        SELECT  Customers.CustomerID, CompanyName,
         sum(UnitPrice * Quantity) as 'TotalOrdersAmount, $'
-        FROM customers
-        join orders on customers.CustomerID = orders.CustomerID
-        join orderdetails on orders.OrderID = orderdetails.OrderID
+        FROM Customers
+        join Orders on Customers.CustomerID = Orders.CustomerID
+        join Orderdetails on Orders.OrderID = Orderdetails.OrderID
         group by CustomerID
         having sum(UnitPrice*Quantity) > 10000
         order by 3 desc, 1
@@ -393,11 +394,11 @@ async function task_1_19(db) {
  */
 async function task_1_20(db) {
     let result = await db.query(`
-        SELECT employees.EmployeeID,  CONCAT(FirstName, " ", LastName) as "Employee Full Name", 
+        SELECT Employees.EmployeeID,  CONCAT(FirstName, " ", LastName) as "Employee Full Name", 
         sum(UnitPrice * Quantity) as 'Amount, $'
-        FROM employees
-        join orders on employees.EmployeeID = orders.EmployeeID
-        join orderdetails on orderdetails.OrderID = orders.OrderID
+        FROM Employees
+        join Orders on Employees.EmployeeID = Orders.EmployeeID
+        join Orderdetails on Orderdetails.OrderID = Orders.OrderID
         group by EmployeeID
         order by 3 desc
         limit 1
@@ -414,7 +415,7 @@ async function task_1_20(db) {
 async function task_1_21(db) {
     let result = await db.query(`
         SELECT OrderID, sum(UnitPrice * Quantity) as 'Maximum Purchase Amount, $'
-        FROM northwind.orderdetails
+        FROM Orderdetails
         group by OrderID
         order by 2 desc
         limit 1
@@ -432,19 +433,19 @@ async function task_1_21(db) {
  */
 async function task_1_22(db) {
     let result = await db.query(`
-        SELECT  distinct customers.CompanyName, products.ProductName, orderdetails.UnitPrice as 'PricePerItem'
-        FROM customers 
-        join orders on customers.CustomerID = orders.CustomerID
-        join orderdetails on orders.OrderID = orderdetails.OrderID
-        join products on orderdetails.ProductID = products.ProductID
-        where orderdetails.UnitPrice = (
-            SELECT max(orderdetails.UnitPrice)
-            FROM customers c1
-            join orders on customers.CustomerID = orders.CustomerID
-            join orderdetails on orders.OrderID = orderdetails.OrderID
-            where c1.CompanyName = customers.CompanyName
+        SELECT  distinct Customers.CompanyName, Products.ProductName, Orderdetails.UnitPrice as 'PricePerItem'
+        FROM Customers 
+        join Orders on Customers.CustomerID = Orders.CustomerID
+        join Orderdetails on Orders.OrderID = Orderdetails.OrderID
+        join Products on Orderdetails.ProductID = Products.ProductID
+        where Orderdetails.UnitPrice = (
+            SELECT max(Orderdetails.UnitPrice)
+            FROM Customers c1
+            join Orders on Customers.CustomerID = Orders.CustomerID
+            join Orderdetails on Orders.OrderID = Orderdetails.OrderID
+            where c1.CompanyName = Customers.CompanyName
         )
-        order by 3 desc, customers.CompanyName,  products.ProductName
+        order by 3 desc, Customers.CompanyName,  Products.ProductName
     `);
     return result[0];
 }
